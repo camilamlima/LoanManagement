@@ -32,16 +32,17 @@ class LoanSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        loan = Loan.objects.filter(client_id=data['client_id'])
+        loans = Loan.objects.filter(client_id=data['client_id'])
         has_payment = False
         times_missed = 0
-        for i in loan:
+        for loan in loans:
             try:
-                payment = Payment.objects.get(loan_id=i.loan_id)
+                payment = Payment.objects.filter(loan_id=loan.loan_id)
                 has_payment = True
-                made_or_not = payment.payment
-                if made_or_not == 'missed':
-                    times_missed += 1
+                for value in payment:
+                    made_or_not = value.payment
+                    if made_or_not == 'missed':
+                        times_missed += 1
             except ObjectDoesNotExist:
                 pass
         if times_missed == 0 and has_payment:
@@ -51,7 +52,7 @@ class LoanSerializer(serializers.ModelSerializer):
             data['rate'] += decimal.Decimal('0.04')
             return data
         elif times_missed >= 3:
-            raise serializers.ValidationError("Cliente não pagou 3 ou mais faturas.")
+            raise serializers.ValidationError("O cliente não pagou 3 ou mais faturas.")
         elif not has_payment:
             return data
 
