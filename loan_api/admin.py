@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Payload
+from .models import Loan, Client, Payment
 
 
-class PayloadAdmin(admin.ModelAdmin):
+class LoanAdmin(admin.ModelAdmin):
     list_display = [
         'loan_id',
         'amount',
@@ -11,5 +11,20 @@ class PayloadAdmin(admin.ModelAdmin):
         'date'
     ]
 
+class ClientAdmin(admin.ModelAdmin):
+    list_display = [
+        'client_id',
+        'name',
+        'surname',
+        'email',
+        'telephone',
+        'cpf',
+    ]
 
-admin.site.register(Payload, PayloadAdmin)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ("loan_id", "payment", "date", "amount")
+
+
+admin.site.register(Loan, LoanAdmin)
+admin.site.register(Client, ClientAdmin)
+admin.site.register(Payment, PaymentAdmin)
