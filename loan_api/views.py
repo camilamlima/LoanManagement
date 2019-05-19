@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 
 from rest_framework.response import Response
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView
 
 from .models import Client, Loan, Payment
-from .serializers import ClientSerializer, PaymentSerializer, LoanSerializer
+from .serializers import ClientSerializer, PaymentSerializer, LoanSerializer, BalanceSerializer
 
 
 class ClientCreateView(CreateAPIView):
@@ -33,7 +33,16 @@ class PaymentCreateView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-        
+
+
+class BalanceView(RetrieveAPIView):
+    serializer_class = BalanceSerializer
+
+    def get(self, request, loan_id, *args, **kwargs):
+        loan = get_object_or_404(Loan, loan_id=loan_id)
+        serializer = BalanceSerializer(loan)
+        return Response(serializer.data)
+
 
 def test(request):
     return HttpResponse("Loan Management System")

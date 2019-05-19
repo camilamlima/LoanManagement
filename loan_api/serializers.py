@@ -36,3 +36,14 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         return {}
+
+
+class BalanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Loan
+        fields = "__all__"
+
+    def to_representation(self, obj):
+        return {
+            "balance": (obj.balance)        
+        }

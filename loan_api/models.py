@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext as _
 import decimal
+from datetime import datetime, timezone
 from django.core.validators import MinValueValidator
 
 
@@ -34,6 +35,11 @@ class Loan(models.Model):
 
     def __str__(self):
         return f'Loan Id: {self.loan_id} instalment: {self.instalment}'
+
+    @property
+    def balance(self, date=datetime.now().astimezone(tz=timezone.utc)):
+        credit = len(self.payment_set.filter(payment='made', date__lte=date))
+        return self.instalment * (self.term - credit)
 
     @property
     def instalment(self):
