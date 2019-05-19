@@ -8,15 +8,12 @@ from .models import Client, Loan, Payment
 
 
 class ClientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Client
-        fields = '__all__'
+        fields = "__all__"
 
     def to_representation(self, obj):
-        return {
-            "client_id": obj.client_id, 
-        }
+        return {"client_id": obj.client_id}
 
 
 class LoanSerializer(serializers.ModelSerializer):
@@ -27,34 +24,36 @@ class LoanSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         a = str(obj.loan_id).zfill(15)
         return {
-            "loan_id": f'{a[0:3]}-{a[3:7]}-{a[7:11]}-{a[11:]}',
-            "installment": obj.instalment
+            "loan_id": f"{a[0:3]}-{a[3:7]}-{a[7:11]}-{a[11:]}",
+            "installment": obj.instalment,
         }
 
     def validate(self, data):
-        loans = Loan.objects.filter(client_id=data['client_id'])
-        has_payment = False
-        times_missed = 0
-        for loan in loans:
-            try:
-                payment = Payment.objects.filter(loan_id=loan.loan_id)
-                has_payment = True
-                for value in payment:
-                    made_or_not = value.payment
-                    if made_or_not == 'missed':
-                        times_missed += 1
-            except ObjectDoesNotExist:
-                pass
-        if times_missed == 0 and has_payment:
-            data['rate'] -= decimal.Decimal('0.02')
-            return data
-        elif times_missed < 3 and has_payment:
-            data['rate'] += decimal.Decimal('0.04')
-            return data
-        elif times_missed >= 3:
-            raise serializers.ValidationError("O cliente não pagou 3 ou mais faturas.")
-        elif not has_payment:
-            return data
+        loans = Loan.objects.filter(client_id=data["client_id"])
+
+        if loans:
+            times_missed = 0
+            balance_all = 0
+
+            for loan in loans:
+                balance_all += loan.balance
+                payment = Payment.objects.filter(loan_id=loan.loan_id, payment="missed")
+                times_missed += len(payment)
+
+            if balance_all != 0 or times_missed > 3:
+                # Business rule #3
+                raise serializers.ValidationError("Deny")
+
+            if times_missed == 0:
+                # Business rule #1
+                data["rate"] -= decimal.Decimal("0.02")
+                return data
+            elif times_missed <= 3:
+                # Business rule #2
+                data["rate"] += decimal.Decimal("0.04")
+                return data
+
+        return data
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -72,6 +71,4 @@ class BalanceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def to_representation(self, obj):
-        return {
-            "balance": obj.balance
-        }
+        return {"balance": obj.balance}
