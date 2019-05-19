@@ -22,10 +22,10 @@ class LoanSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def to_representation(self, obj):
+        a = str(obj.loan_id).zfill(15)
         return {
-            "loan_id": str(obj.loan_id), 
+            "loan_id": f'{a[0:3]}-{a[3:7]}-{a[7:11]}-{a[11:]}',
             "installment": obj.instalment
-            
         }
 
 
@@ -45,5 +45,5 @@ class BalanceSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         return {
-            "balance": (obj.balance)        
+            "balance": obj.balance
         }
