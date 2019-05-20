@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import gettext as _
 import decimal
@@ -39,7 +40,10 @@ class Loan(models.Model):
     @property
     def balance(self, date=datetime.now().astimezone(tz=timezone.utc)):
         credit = len(self.payment_set.filter(payment='made', date__lte=date))
-        return self.instalment * (self.term - credit)
+        if (credit == 0) :
+            return self.instalment * self.term
+        else:
+            return self.instalment * (self.term - credit)
 
     @property
     def instalment(self):
