@@ -64,6 +64,58 @@ class PaymentSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         return {}
 
+    def validate(self, data):
+        payments = Payment.objects.filter(loan_id=data["loan_id"]).last()
+        loan = data["loan_id"]
+        current_payment_date = data["date"].replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        loan_date = loan.date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        if current_payment_date <= loan_date:
+            raise serializers.ValidationError(
+                "The payment date must be greater than the loan date"
+            )
+
+        if data["amount"] != loan.instalment:
+            raise serializers.ValidationError(
+                "The amount does not match the instalment"
+            )
+
+        if loan.balance == 0:
+            raise serializers.ValidationError("Loan sold out")
+
+        if payments:
+            last_payment_date = payments.date.replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0
+            )
+
+            if (
+                last_payment_date == current_payment_date
+                and payments.payment == "missed"
+                and data["payment"] == "made"
+            ):
+                return data
+
+            if (
+                last_payment_date == current_payment_date
+                and payments.payment == "made"
+                and data["payment"] == "missed"
+            ):
+                raise serializers.ValidationError(
+                    "Type of payment already made for the date"
+                )
+
+            if (
+                last_payment_date == current_payment_date
+                and payments.payment == data["payment"]
+            ):
+                raise serializers.ValidationError(
+                    "Type of payment already made for the date"
+                )
+
+        return data
+
 
 class BalanceSerializer(serializers.ModelSerializer):
     class Meta:

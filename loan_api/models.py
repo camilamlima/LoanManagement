@@ -4,6 +4,7 @@ from django.utils.translation import gettext as _
 import decimal
 from datetime import datetime, timezone
 from django.core.validators import MinValueValidator
+from .validators import validate_cpf, validate_phone
 
 
 class Client(models.Model):
@@ -11,8 +12,8 @@ class Client(models.Model):
     name = models.CharField(_('Name'), max_length=100)
     surname = models.CharField(_('Surname'), max_length=100)
     email = models.EmailField(_('Email'), max_length=254)
-    telephone = models.CharField(_('Telephone'), max_length=100)
-    cpf = models.CharField(_('CPF'), max_length=100, unique=True)
+    telephone = models.CharField(_('Telephone'), max_length=11, validators=[validate_phone])
+    cpf = models.CharField(_('CPF'), max_length=11, validators=[validate_cpf], unique=True)
 
     class Meta:
         verbose_name = 'Client'
