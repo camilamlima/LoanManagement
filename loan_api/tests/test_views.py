@@ -137,4 +137,4 @@ class TestViews(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['non_field_errors'][0],
-                         ErrorDetail(string='O cliente não pagou 3 ou mais faturas.', code='invalid'))
+                         ErrorDetail(string='Deny', code='invalid'))

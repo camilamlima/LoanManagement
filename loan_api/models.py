@@ -40,7 +40,7 @@ class Loan(models.Model):
     @property
     def balance(self, date=datetime.now().astimezone(tz=timezone.utc)):
         credit = len(self.payment_set.filter(payment='made', date__lte=date))
-        if (credit == 0) :
+        if credit == 0:
             return self.instalment * self.term
         else:
             return self.instalment * (self.term - credit)
