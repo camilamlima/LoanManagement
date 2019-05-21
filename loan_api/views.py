@@ -28,7 +28,6 @@ class PaymentCreateView(CreateAPIView):
     def post(self, request, loan_id, *args, **kwargs):
         loan = get_object_or_404(Loan, loan_id=loan_id)
         data = request.data
-        data["loan_id"] = loan.loan_id
 
         serializer = self.serializer_class(data=data)
         serializer.is_valid(raise_exception=True)

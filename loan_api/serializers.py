@@ -84,7 +84,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
         if (
             data["payment"] != "made"
-            or data["payment"] != "missed"
+            and data["payment"] != "missed"
         ):
             raise serializers.ValidationError(
                 "A valid type must be entered in"
