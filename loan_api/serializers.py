@@ -82,6 +82,14 @@ class PaymentSerializer(serializers.ModelSerializer):
                 "The amount does not match the instalment"
             )
 
+        if (
+            data["payment"] != "made"
+            and data["payment"] != "missed"
+        ):
+            raise serializers.ValidationError(
+                "A valid type must be entered in"
+            )
+
         if loan.balance == 0:
             raise serializers.ValidationError("Loan sold out")
 
